@@ -6,7 +6,7 @@ import java.util.Map;
 public class TokenMapper {
     public static Map<String, TokenType> TOKENS_MAP = new HashMap<>();
     static{
-        TOKENS_MAP.put("auto", TokenType.AUTO); TOKENS_MAP.put("break", TokenType.BREAK);
+        TOKENS_MAP.put("auto", TokenType.AUTO); TOKENS_MAP.put("bool", TokenType.BOOL); TOKENS_MAP.put("break", TokenType.BREAK);
         TOKENS_MAP.put("case", TokenType.CASE); TOKENS_MAP.put("char", TokenType.CHAR);
         TOKENS_MAP.put("const", TokenType.CONST); TOKENS_MAP.put("continue", TokenType.CONTINUE);
         TOKENS_MAP.put("default", TokenType.DEFAULT); TOKENS_MAP.put("do", TokenType.DO);
