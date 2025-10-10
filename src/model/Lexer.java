@@ -103,24 +103,20 @@ public class Lexer {
     }
 
     private void processSymbols(String code, int code_len){
-        String symbol = (index + 1 < code_len && !Character.isWhitespace(code.charAt(index + 1))
-            && !Character.isLetterOrDigit(code.charAt(index + 1)))?
-                //+2 'cause substring takes end - 1.
-                code.substring(index, index + 2) : String.valueOf(currentChar);
-        var symbol_len = symbol.length();
+        // First, try to match a 2 char token and if its found, make a substring, else try a single token
+        String twoCharSymbol = (index + 1 < code_len) ? code.substring(index, index + 2) : null;
 
-        if (TOKENS_MAP.containsKey(symbol)) tokens.add(new Token(symbol, TOKENS_MAP.get(symbol)));
-        else if (symbol_len == 2){
-            String char1 = String.valueOf(symbol.charAt(0)), char2 = String.valueOf(symbol.charAt(1));
-            //For symbols like +=, *=, -=, /=
-            tokens.addAll(List.of(
-                    new Token(char1, TOKENS_MAP.getOrDefault(char1, TokenType.NOT_FOUND)),
-                    new Token(char2, TOKENS_MAP.getOrDefault(char2, TokenType.NOT_FOUND))
-            ));
+        if (twoCharSymbol != null && TOKENS_MAP.containsKey(twoCharSymbol)) {
+            // Found a valid 2-char token (==, !=, >=, <=, &&, ||, ++, --, >>, <<, ->, %d, %s) until infinite and beyond
+            tokens.add(new Token(twoCharSymbol, TOKENS_MAP.get(twoCharSymbol)));
+            index += 2;
+        } else {
+            // Single token
+            String singleChar = String.valueOf(currentChar);
+            TokenType type = TOKENS_MAP.getOrDefault(singleChar, TokenType.NOT_FOUND);
+            tokens.add(new Token(singleChar, type));
+            index++;
         }
-        else tokens.add(new Token(symbol, TokenType.NOT_FOUND));
-
-        index += symbol_len;
     }
 
     public void reset(){
