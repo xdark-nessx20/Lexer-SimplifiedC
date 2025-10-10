@@ -10,5 +10,6 @@ public class Configuration {
 
     public static String MAGENTA = "\u001B[1;35m";
     public static String GREEN = "\u001B[32m";
+    public static String BLUE = "\u001B[34m";
     public static String RESET = "\u001B[0m";
 }

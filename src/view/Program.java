@@ -13,12 +13,14 @@ public class Program {
     public static void main(String[] args) {
         var files = getTestFiles();
         List<String> codes = getCodeFromFiles(files);
+        var lexer = new Lexer();
 
         codes.forEach(code -> {
-            Lexer.lexer(code).forEach(token -> {
+            lexer.processCode(code).forEach(token -> {
                 var tokenStr = "Token: %s".formatted(token.toString());
                 System.out.println(tokenStr);
             });
+            lexer.reset();
             System.out.println();
         });
     }
@@ -31,7 +33,7 @@ public class Program {
                     .filter(file -> file.toString().endsWith(EXT_TXT))
                     .toList();
         } catch (IOException ex){
-            System.out.println("Error: %s".formatted(ex.getMessage()));
+            System.err.println("Error: %s".formatted(ex.getMessage()));
             return List.of();
         }
     }
@@ -42,7 +44,7 @@ public class Program {
                     try{
                         return Files.readString(file);
                     } catch (IOException ex){
-                        System.out.println("Error reading \"%s\" : %s".formatted(file.toString(), ex.getMessage()));
+                        System.err.println("Error reading \"%s\" : %s".formatted(file.toString(), ex.getMessage()));
                         return "";
                     }
                 }).toList();
