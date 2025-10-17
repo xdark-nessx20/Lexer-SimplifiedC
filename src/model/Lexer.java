@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import static model.TokenMapper.TOKENS_MAP;
 
 public class Lexer {
@@ -9,44 +10,45 @@ public class Lexer {
     private int index;
     private char currentChar;
 
-    public Lexer(){
+    public Lexer() {
         tokens = new ArrayList<>();
         index = 0;
     }
 
-    public List<Token> processCode(String code){
+    public List<Token> processCode(String code) {
         var code_length = code.length();
 
         //Start to process the code
-        while(index < code_length){
+        while (index < code_length) {
             currentChar = code.charAt(index);
 
             //We don't need whitespaces
-            while (Character.isWhitespace(currentChar)){
+            while (Character.isWhitespace(currentChar)) {
                 if (++index >= code_length) return tokens;
                 currentChar = code.charAt(index);
             }
 
             //To start verifying keywords or identifiers
-            if (Character.isLetter(currentChar) || currentChar == '_' || currentChar == '$'){
+            if (Character.isLetter(currentChar) || currentChar == '_' || currentChar == '$') {
                 processKeywordsAndIdentifiers(code, code_length);
                 continue;
             }
 
-            //To start verifying numbers
-            if (Character.isDigit(currentChar)){
+            //To start verifying int and decimal numbers
+            if (Character.isDigit(currentChar) || (currentChar == '.' && index + 1 < code_length
+                    && Character.isDigit(code.charAt(index + 1)))) {
                 processNumbers(code, code_length);
                 continue;
             }
 
             //To start verifying pre-processing polices
-            if (currentChar == '#'){
+            if (currentChar == '#') {
                 processPolices(code, code_length);
                 continue;
             }
 
             //To start verifying escape chars
-            if (currentChar == '\\'){
+            if (currentChar == '\\') {
                 processEscChars(code, code_length);
                 continue;
             }
@@ -57,14 +59,13 @@ public class Lexer {
         return tokens;
     }
 
-    private void processKeywordsAndIdentifiers(String code, int code_len){
+    private void processKeywordsAndIdentifiers(String code, int code_len) {
         //Better for manipulating strings
         var id = new StringBuilder();
         do {
             id.append(currentChar);
-            currentChar = code.charAt(++index);
-        } while (index < code_len && Character.isLetterOrDigit(currentChar) || currentChar == '_'
-                || currentChar == '$'); //C also admits '$' as an ID
+        } while (nextChar(code, code_len) && (Character.isLetterOrDigit(currentChar) || currentChar == '_'
+                || currentChar == '$')); //C also admits '$' as an ID
 
         var idStr = id.toString();
         //Ask if id is a keyword but id is an identifier
@@ -72,37 +73,44 @@ public class Lexer {
         tokens.add(new Token(idStr, type));
     }
 
-    private void processNumbers(String code, int code_len){
+    //TODO: Allow decimal numbers
+    private void processNumbers(String code, int code_len) {
         var number = new StringBuilder();
+        //boolean hasDecimalPoint = false, hasExpo = false;
         do {
             number.append(currentChar);
-            currentChar = code.charAt(++index);
-        } while (index < code_len && Character.isDigit(currentChar));
+        } while (nextChar(code, code_len) && Character.isDigit(currentChar));
 
         tokens.add(new Token(number.toString(), TokenType.INT_NUM));
     }
 
-    private void processPolices(String code, int code_len){
+    private void processPolices(String code, int code_len) {
         var police = new StringBuilder();
         do {
             police.append(currentChar);
-            currentChar = code.charAt(++index);
-        } while (index < code_len && Character.isLetter(currentChar));
+        } while (nextChar(code, code_len) && Character.isLetter(currentChar));
 
         var policeStr = police.toString();
-        //A pre-processing police can't be an ID. So, if the police's not found, we return TokenType NOTFOUND
+        //A pre-processing police can't be an ID. So, if the police's not found, we return TokenType NOTFOUND,
+        // unless the professor says that it has to throw an error message
         TokenType type = TOKENS_MAP.getOrDefault(policeStr, TokenType.NOT_FOUND);
         tokens.add(new Token(policeStr, type));
     }
 
-    private void processEscChars(String code, int code_len){
-        var esc = String.valueOf(currentChar) + code.charAt(++index);
-        TokenType type = TOKENS_MAP.getOrDefault(esc, TokenType.NOT_FOUND);
-        tokens.add(new Token(esc, type));
-        index++;
+    private void processEscChars(String code, int code_len) {
+        var firstChar = String.valueOf(currentChar);
+        //It's necessary to verify if the code hasn't finished
+        if (!nextChar(code, code_len)) {
+            tokens.add(new Token(firstChar, TokenType.NOT_FOUND));
+            return;
+        }
+
+        String esc = firstChar + currentChar;
+        tokens.add(new Token(esc, TOKENS_MAP.getOrDefault(esc, TokenType.NOT_FOUND)));
+        nextChar(code, code_len);
     }
 
-    private void processSymbols(String code, int code_len){
+    private void processSymbols(String code, int code_len) {
         // First, try to match a 2 char token and if its found, make a substring, else try a single token
         String twoCharSymbol = (index + 1 < code_len) ? code.substring(index, index + 2) : null;
 
@@ -119,9 +127,15 @@ public class Lexer {
         }
     }
 
-    public void reset(){
+    public void reset() {
         tokens.clear();
         index = 0;
+    }
+
+    private boolean nextChar(String code, int code_len) {
+        if (++index >= code_len) return false;
+        currentChar = code.charAt(index);
+        return true;
     }
 
 }
