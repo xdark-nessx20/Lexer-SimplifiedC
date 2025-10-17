@@ -5,7 +5,7 @@ int main(){
     int b;
     b += 9;
     a = b + 10;
-    bool _yesOrNo = b < 20;
+    bool _yesOrNo = b < 1.E5;
     printf("A vale \"%d\"\n", a);
     return 0;
 }
