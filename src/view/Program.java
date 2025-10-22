@@ -4,21 +4,23 @@ import model.Lexer;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.nio.file.Files;
+import java.util.stream.Stream;
 
 import static resources.Configuration.*;
 
 public class Program {
     public static void main(String[] args) {
         var files = getTestFiles();
-        List<String> codes = getCodeFromFiles(files);
+        var codes = getCodeFromFiles(files);
         var lexer = new Lexer();
 
         codes.forEach(code -> {
+            System.out.println(BLUE + "Test #%d".formatted(codes.indexOf(code)) + RESET);
             lexer.processCode(code).forEach(token -> {
-                var tokenStr = "Token: %s".formatted(token.toString());
-                System.out.println(tokenStr);
+                System.out.println("Token: %s".formatted(token.toString()));
             });
             lexer.reset();
             System.out.println();
@@ -39,14 +41,30 @@ public class Program {
     }
 
     private static List<String> getCodeFromFiles(List<Path> files) {
-        return files.stream()
-                .map(file -> {
-                    try{
-                        return Files.readString(file);
-                    } catch (IOException ex){
-                        System.err.println("Error reading \"%s\" : %s".formatted(file.toString(), ex.getMessage()));
-                        return "";
+        List<String> codes = new ArrayList<>();
+        //For reading distinct codes in the same file
+        var currentCode = new StringBuilder();
+        files.forEach(file ->{
+            try(Stream<String> lines = Files.lines(file)){
+                lines.forEach(line -> {
+                    line = line.trim();
+                    //We assume that the codes always start with either main func or a pre-processing police
+                    if(line.contains("main()") || line.startsWith("#")){
+                        if(!currentCode.isEmpty() && currentCode.toString().contains("main()")){
+                            codes.add(currentCode.toString());
+                            //Cleaning the StringBuilder to reuse it
+                            currentCode.setLength(0);
+                        }
+                        currentCode.append(line);
+
                     }
-                }).toList();
+                    else currentCode.append(line);
+                });
+                codes.add(currentCode.toString());
+            } catch (IOException ex){
+                System.err.println("Error: %s".formatted(ex.getMessage()));
+            }
+        });
+        return codes;
     }
 }

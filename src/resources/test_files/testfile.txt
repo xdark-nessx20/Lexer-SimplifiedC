@@ -1,0 +1,74 @@
+#include <stdio.h>
+
+int main(){
+    int a;
+    int b;
+    b += 9;
+    a = b + 10;
+    bool _yesOrNo = b < 1.E5;
+    printf("A vale \"%d\"\n", a);
+    return 0;
+}
+
+void main(){
+  int a, b;
+  float c = 12.34e+24;
+
+  printf("Hola Mundo");
+}
+
+void main(){
+  int a, b;
+  float c = 12.34e+24;
+
+  if(a > b  && c == a){
+    printf("a > b");
+  }
+  else {
+    printf("a < b");
+  }
+  printf("Hola Mundo");
+}
+
+void main(){
+  int a, b;
+  float c = 12.34e+24;
+
+  while(a == c || a!=0){
+     if(a > b  && c == a){
+        printf("a > b");
+     }
+     else {
+	printf("a < b");
+     }
+  }
+  printf("Hola Mundo");
+}
+
+void main(){
+  int a, b;
+  float c = 12.34e+24;
+  float d = 1.34e-24;
+  float z = .34e24;
+
+  for(int j = 0; j <= 100; j++){
+     printf("valor de j ", j);
+  }
+
+  printf("Hola Mundo");
+}
+
+void main(){
+  int a, b;
+  float c = 12.34e+24;
+
+  switch(a){
+    case '1': printf("Hola 1");break;
+    case '2': printf("Hola 2");break;
+    case '3': printf("Hola 3");break;
+    case '4': printf("Hola 4");break;
+    default:
+       printf("Hola 5");break;
+  }
+  printf("Hola Mundo");
+}
