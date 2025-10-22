@@ -42,6 +42,7 @@ public class TokenMapper {
         TOKENS_MAP.put("(", TokenType.L_PAR); TOKENS_MAP.put(")", TokenType.R_PAR);
         TOKENS_MAP.put("{", TokenType.L_BRACE); TOKENS_MAP.put("}", TokenType.R_BRACE);
         TOKENS_MAP.put(",", TokenType.COMMA); TOKENS_MAP.put(";", TokenType.SEMI);
+        TOKENS_MAP.put(":", TokenType.COLON);
         //
         TOKENS_MAP.put(".", TokenType.POINT); TOKENS_MAP.put("->", TokenType.R_ARROW);
          TOKENS_MAP.put("'", TokenType.QMARK); TOKENS_MAP.put("=", TokenType.ASSIGN);
