@@ -73,15 +73,73 @@ public class Lexer {
         tokens.add(new Token(idStr, type));
     }
 
-    //TODO: Allow decimal numbers
     private void processNumbers(String code, int code_len) {
         var number = new StringBuilder();
-        //boolean hasDecimalPoint = false, hasExpo = false;
+        boolean hasDecimalPoint = false, hasExpo = false;
+
+        //Verify if num starts with decimal point
+        if (currentChar == '.') {
+            hasDecimalPoint = true;
+            number.append(currentChar);
+            if (!nextChar(code, code_len)) return;
+        }
+
+        //Process integer and decimal part
         do {
             number.append(currentChar);
-        } while (nextChar(code, code_len) && Character.isDigit(currentChar));
+            if (!nextChar(code, code_len)) break;
 
-        tokens.add(new Token(number.toString(), TokenType.INT_NUM));
+            //Verify for decimal point
+            if (currentChar == '.' && !hasDecimalPoint) {
+                //Verify if the next char is digit or exp
+                if (index + 1 < code_len) {
+                    var nextCh = code.charAt(index + 1);
+                    if (Character.isDigit(nextCh) || nextCh == 'E' || nextCh == 'e'
+                            || nextCh == ';' || Character.isWhitespace(nextCh)) {
+                        hasDecimalPoint = true;
+                        number.append(currentChar);
+                        if (!nextChar(code, code_len)) break;
+                    }
+                    else break; //Invalid decimal
+                }
+                else break;
+            }
+        } while (Character.isDigit(currentChar));
+
+        //Verify for exp
+        if (index < code_len && (currentChar == 'E' || currentChar == 'e')) {
+            hasExpo = true;
+            number.append(currentChar);
+            if (!nextChar(code, code_len)){
+                tokens.add(new Token(number.toString(), TokenType.DECIMAL_NUM));
+                return;
+            }
+
+            // Optional sign after exp
+            if (currentChar == '+' || currentChar == '-') {
+                number.append(currentChar);
+                if (!nextChar(code, code_len)) {
+                    tokens.add(new Token(number.toString(), TokenType.DECIMAL_NUM));
+                    return;
+                }
+            }
+
+            // Must have at least one digit after exp
+            if (!Character.isDigit(currentChar)) {
+                // Invalid exponent format
+                tokens.add(new Token(number.toString(), TokenType.NOT_FOUND));
+                return;
+            }
+
+            // Process exponent digits
+            while (Character.isDigit(currentChar)) {
+                number.append(currentChar);
+                if (!nextChar(code, code_len)) break;
+            }
+        }
+
+        var type = (hasDecimalPoint || hasExpo) ? TokenType.DECIMAL_NUM : TokenType.INT_NUM;
+        tokens.add(new Token(number.toString(), type));
     }
 
     private void processPolices(String code, int code_len) {
