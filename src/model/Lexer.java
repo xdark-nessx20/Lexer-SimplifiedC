@@ -86,12 +86,12 @@ public class Lexer {
                 }
 
                 var format = String.valueOf(currentChar);
-                if (nextChar(code, code_len) && currentChar != '"'){
+                if (nextChar(code, code_len) && currentChar != '"' && currentChar != '\\') {
                     format += currentChar;
                     TokenType type = TOKENS_MAP.getOrDefault(format, TokenType.NOT_FOUND);
                     tokens.add(new Token(format, type));
                     nextChar(code, code_len);
-                } else tokens.add(new Token(format, TokenType.NOT_FOUND));
+                } else tokens.add(new Token(format, TokenType.TEXT));
                 continue;
             }
 
