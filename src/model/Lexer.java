@@ -47,9 +47,9 @@ public class Lexer {
                 continue;
             }
 
-            //To start verifying escape chars
-            if (currentChar == '\\') {
-                processEscChars(code, code_length);
+            //To start verifying text
+            if (currentChar == '"') {
+                processText(code, code_length);
                 continue;
             }
 
@@ -57,6 +57,56 @@ public class Lexer {
             processSymbols(code, code_length);
         }
         return tokens;
+    }
+
+    private void processText(String code, int code_len) {
+        //Add the DQMark
+        tokens.add(new Token("\"", TOKENS_MAP.get("\"")));
+
+        if (!nextChar(code, code_len)) return;
+
+        var text = new StringBuilder();
+        while (index < code_len && currentChar != '"') {
+            //For extracting pre-processing polices in a text
+            if (currentChar == '\\') {
+                if (!text.isEmpty()){
+                    tokens.add(new Token(text.toString(), TokenType.TEXT));
+                    text.setLength(0);
+                }
+
+                processEscChars(code, code_len);
+                continue;
+            }
+
+            //For extracting string formats in a text
+            if (currentChar == '%') {
+                if (!text.isEmpty()){
+                    tokens.add(new Token(text.toString(), TokenType.TEXT));
+                    text.setLength(0);
+                }
+
+                var format = String.valueOf(currentChar);
+                if (nextChar(code, code_len) && currentChar != '"' && currentChar != '\\') {
+                    format += currentChar;
+                    TokenType type = TOKENS_MAP.getOrDefault(format, TokenType.NOT_FOUND);
+                    tokens.add(new Token(format, type));
+                    nextChar(code, code_len);
+                } else tokens.add(new Token(format, TokenType.TEXT));
+                continue;
+            }
+
+            text.append(currentChar);
+            nextChar(code, code_len);
+        }
+
+        //Add remaining text
+        if (!text.isEmpty()) tokens.add(new Token(text.toString(), TokenType.TEXT));
+
+        //Add the closing " if it exists
+        if (currentChar == '"') {
+            tokens.add(new Token("\"", TokenType.DQ_MARK));
+            index++;
+        }
     }
 
     private void processKeywordsAndIdentifiers(String code, int code_len) {
